@@ -6,7 +6,7 @@
 /*   By: mbachar <mbachar@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 22:36:43 by mbachar           #+#    #+#             */
-/*   Updated: 2023/06/23 01:31:25 by mbachar          ###   ########.fr       */
+/*   Updated: 2023/06/24 11:15:57 by mbachar          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,11 @@ typedef struct s_philo
 	int				id;
 	int				eat_counter;
 	size_t			lastmeal_time;
-	int				flag;
 	pthread_t		philo;
 	pthread_mutex_t	fork;
+	pthread_mutex_t	death;
+	pthread_mutex_t	print;
+	int				flag;
 	struct s_philo	*prev;
 	struct s_philo	*next;
 	struct s_list	*list;
@@ -42,11 +44,8 @@ typedef struct s_list
 	int				time_to_eat;
 	int				time_to_sleep;
 	int				time_to_die;
-	pthread_mutex_t	death;
-	pthread_mutex_t	eat;
 	int				eating_count;
 	struct s_philo	*philo;
-	struct s_philo	*p_philo;
 }				t_list;
 
 /*	Tools	*/

@@ -6,7 +6,7 @@
 /*   By: mbachar <mbachar@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 01:00:23 by mbachar           #+#    #+#             */
-/*   Updated: 2023/06/23 01:31:38 by mbachar          ###   ########.fr       */
+/*   Updated: 2023/06/24 11:16:44 by mbachar          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,14 @@ t_philo	*ft_lstnew(int content, t_list *dawdaw)
 	node->next = node;
 	node->prev = node;
 	node->list = dawdaw;
+	node->flag = 1;
 	node->eat_counter = 0;
 	if (pthread_mutex_init(&node->fork, NULL) == -1)
 		return (printf("Fork Mutex Error!\n"), NULL);
+	if (pthread_mutex_init(&node->death, NULL) == -1)
+		return (printf("Death Mutex Error!\n"), NULL);
+	if (pthread_mutex_init(&node->print, NULL) == -1)
+		return (printf("Print Mutex Error!\n"), NULL);
 	return (node);
 }
 

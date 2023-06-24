@@ -6,7 +6,7 @@
 /*   By: mbachar <mbachar@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 00:39:24 by mbachar           #+#    #+#             */
-/*   Updated: 2023/06/23 01:52:15 by mbachar          ###   ########.fr       */
+/*   Updated: 2023/06/24 12:22:42 by mbachar          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ void	daddysleep(size_t timestamp)
 
 void	fill_list(t_list *lst, char **args)
 {
-	lst->philo->flag = 1;
 	lst->philos_count = ft_atoi(args[1]);
 	lst->time_to_die = ft_atoi(args[2]);
 	lst->time_to_eat = ft_atoi(args[3]);
@@ -40,21 +39,14 @@ void	fill_list(t_list *lst, char **args)
 		lst->eating_count = -1;
 	else
 		lst->eating_count = ft_atoi(args[5]);
-	if (pthread_mutex_init(&lst->death, NULL) == -1)
-	{
-		printf("Death Mutex Error!\n");
-		return ;
-	}
-	if (pthread_mutex_init(&lst->eat, NULL) == -1)
-	{
-		printf("Eat Mutex Error!\n");
-		return ;
-	}
 }
 
 void	print_activity(t_philo *philo, char *str)
 {
-	printf("%zu\t%d\t%s\n",currenttime() - philo->list->the_begining_of_the_existence, philo->id, str);
+	pthread_mutex_lock(&philo->print);
+	printf("%zu\t%d\t%s\n", currenttime() - philo->list->the_begining_of_the_existence, philo->id, str);
+	if (philo->flag == 1)
+		pthread_mutex_unlock(&philo->print);
 }
 
 void	*philo_stat(void *philo)
@@ -63,16 +55,18 @@ void	*philo_stat(void *philo)
 
 	philos = (t_philo *)philo;
 	if (philos->id % 2 == 0)
-		usleep(200);
-	while (1)
+		usleep(75);
+	while (philos->flag)
 	{
 		pthread_mutex_lock(&philos->fork);
 		print_activity(philos, "has taken a fork");
 		pthread_mutex_lock(&philos->next->fork);
 		print_activity(philos, "has taken a fork");
 		print_activity(philos, "is eating");
+		pthread_mutex_lock(&philos->death);
 		philos->lastmeal_time = currenttime();
 		philos->eat_counter++;
+		pthread_mutex_unlock(&philos->death);
 		daddysleep(philos->list->time_to_eat);
 		pthread_mutex_unlock(&philos->fork);
 		pthread_mutex_unlock(&philos->next->fork);
@@ -98,19 +92,22 @@ int	create_threads(t_list *shared)
 		shared->philo = shared->philo->next;
 		philos++;
 	}
-	while(1)
+	while(shared->philo->flag)
 	{
+		pthread_mutex_lock(&shared->philo->death);
 		if (shared->philo->eat_counter > shared->eating_count && shared->eating_count != -1)
 		{
-			print_activity(shared->philo, "All philos ate");
-			break ;
+			shared->philo->flag = 0;
+			return (0);
 		}
 		if (currenttime() - shared->philo->lastmeal_time > (size_t)shared->time_to_die)
 		{
 			print_activity(shared->philo, "died");
-			break ;
+			shared->philo->flag = 0;
+			return (0);
 		}
+		pthread_mutex_unlock(&shared->philo->death);
 		shared->philo = shared->philo->next;
 	}
-	return (0);
+	return (1);
 }

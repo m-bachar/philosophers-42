@@ -6,7 +6,7 @@
 /*   By: mbachar <mbachar@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 22:36:39 by mbachar           #+#    #+#             */
-/*   Updated: 2023/06/12 23:59:04 by mbachar          ###   ########.fr       */
+/*   Updated: 2023/06/24 12:03:46 by mbachar          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ int	ft_isempty(char **str)
 				count++;
 			i++;
 		}
-		if (count == (int)ft_strlen(str[j]))
+		if (count == ft_strlen(str[j]))
 			return (0);
 		i = 0;
 		count = 0;
