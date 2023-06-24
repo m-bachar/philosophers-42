@@ -6,28 +6,11 @@
 /*   By: mbachar <mbachar@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 00:39:24 by mbachar           #+#    #+#             */
-/*   Updated: 2023/06/24 12:22:42 by mbachar          ###   ########.fr       */
+/*   Updated: 2023/06/24 13:13:02 by mbachar          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-
-size_t	currenttime(void)
-{
-	struct timeval	time;
-
-	gettimeofday(&time, NULL);
-	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
-}
-
-void	daddysleep(size_t timestamp)
-{
-	size_t	currently;
-
-	currently = currenttime();
-	while (currenttime() < currently + timestamp)
-		usleep(100);
-}
 
 void	fill_list(t_list *lst, char **args)
 {
@@ -35,6 +18,16 @@ void	fill_list(t_list *lst, char **args)
 	lst->time_to_die = ft_atoi(args[2]);
 	lst->time_to_eat = ft_atoi(args[3]);
 	lst->time_to_sleep = ft_atoi(args[4]);
+	if (pthread_mutex_init(&lst->print, NULL) == -1)
+	{
+		printf("Print Mutex Error!\n");
+		return ;
+	}
+	if (pthread_mutex_init(&lst->death, NULL) == -1)
+	{
+		printf("Death Mutex Error!\n");
+		return ;
+	}
 	if (!args[5])
 		lst->eating_count = -1;
 	else
@@ -43,10 +36,12 @@ void	fill_list(t_list *lst, char **args)
 
 void	print_activity(t_philo *philo, char *str)
 {
-	pthread_mutex_lock(&philo->print);
-	printf("%zu\t%d\t%s\n", currenttime() - philo->list->the_begining_of_the_existence, philo->id, str);
+	pthread_mutex_lock(&philo->list->print);
+	printf("%zu\t%d\t%s\n",
+		currenttime() - philo->list->the_begining_of_the_existence,
+		philo->id, str);
 	if (philo->flag == 1)
-		pthread_mutex_unlock(&philo->print);
+		pthread_mutex_unlock(&philo->list->print);
 }
 
 void	*philo_stat(void *philo)
@@ -55,7 +50,7 @@ void	*philo_stat(void *philo)
 
 	philos = (t_philo *)philo;
 	if (philos->id % 2 == 0)
-		usleep(75);
+		usleep(100);
 	while (philos->flag)
 	{
 		pthread_mutex_lock(&philos->fork);
@@ -63,10 +58,10 @@ void	*philo_stat(void *philo)
 		pthread_mutex_lock(&philos->next->fork);
 		print_activity(philos, "has taken a fork");
 		print_activity(philos, "is eating");
-		pthread_mutex_lock(&philos->death);
+		pthread_mutex_lock(&philos->list->death);
 		philos->lastmeal_time = currenttime();
 		philos->eat_counter++;
-		pthread_mutex_unlock(&philos->death);
+		pthread_mutex_unlock(&philos->list->death);
 		daddysleep(philos->list->time_to_eat);
 		pthread_mutex_unlock(&philos->fork);
 		pthread_mutex_unlock(&philos->next->fork);
@@ -75,6 +70,30 @@ void	*philo_stat(void *philo)
 		print_activity(philos, "is thinking");
 	}
 	return (NULL);
+}
+
+int	create_threads_2(t_list *shared)
+{
+	while (shared->philo->flag)
+	{
+		pthread_mutex_lock(&shared->death);
+		if (shared->philo->eat_counter > shared->eating_count
+			&& shared->eating_count != -1)
+		{
+			shared->philo->flag = 0;
+			return (0);
+		}
+		if (currenttime() - shared->philo->lastmeal_time
+			> (size_t)shared->time_to_die)
+		{
+			print_activity(shared->philo, "died");
+			shared->philo->flag = 0;
+			return (0);
+		}
+		pthread_mutex_unlock(&shared->death);
+		shared->philo = shared->philo->next;
+	}
+	return (1);
 }
 
 int	create_threads(t_list *shared)
@@ -86,28 +105,15 @@ int	create_threads(t_list *shared)
 	while (philos < shared->philos_count)
 	{
 		shared->philo->lastmeal_time = currenttime();
-		if (pthread_create(&shared->philo->philo, NULL, &philo_stat, shared->philo) != 0)
-			return (printf("Error\n"), 0);
-		pthread_detach(shared->philo->philo);
+		if (pthread_create(&shared->philo->philo,
+				NULL, &philo_stat, shared->philo) != 0)
+			return (printf("Error while creating threads\n"), 0);
+		if (pthread_detach(shared->philo->philo) != 0)
+			return (printf("Error while detaching\n"), 0);
 		shared->philo = shared->philo->next;
 		philos++;
 	}
-	while(shared->philo->flag)
-	{
-		pthread_mutex_lock(&shared->philo->death);
-		if (shared->philo->eat_counter > shared->eating_count && shared->eating_count != -1)
-		{
-			shared->philo->flag = 0;
-			return (0);
-		}
-		if (currenttime() - shared->philo->lastmeal_time > (size_t)shared->time_to_die)
-		{
-			print_activity(shared->philo, "died");
-			shared->philo->flag = 0;
-			return (0);
-		}
-		pthread_mutex_unlock(&shared->philo->death);
-		shared->philo = shared->philo->next;
-	}
+	if (!create_threads_2(shared))
+		return (0);
 	return (1);
 }

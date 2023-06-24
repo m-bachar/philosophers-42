@@ -6,11 +6,41 @@
 /*   By: mbachar <mbachar@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 22:36:40 by mbachar           #+#    #+#             */
-/*   Updated: 2023/06/24 12:05:54 by mbachar          ###   ########.fr       */
+/*   Updated: 2023/06/24 13:10:14 by mbachar          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+
+size_t	currenttime(void)
+{
+	struct timeval	time;
+
+	gettimeofday(&time, NULL);
+	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
+}
+
+void	daddysleep(size_t timestamp)
+{
+	size_t	currently;
+
+	currently = currenttime();
+	while (currenttime() < currently + timestamp)
+		usleep(100);
+}
+
+int	norminette(t_list *dawdaw)
+{
+	if (!create_threads(dawdaw))
+	{
+		pthread_mutex_unlock(&dawdaw->death);
+		pthread_mutex_destroy(&dawdaw->death);
+		pthread_mutex_destroy(&dawdaw->philo->fork);
+		pthread_mutex_destroy(&dawdaw->print);
+		return (1);
+	}
+	return (0);
+}
 
 int	main(int ac, char *av[])
 {
@@ -29,15 +59,9 @@ int	main(int ac, char *av[])
 		while (i++ < ft_atoi(av[1]))
 			ft_lstadd_back(&dawdaw.philo, ft_lstnew(i, &dawdaw));
 		fill_list(&dawdaw, av);
-		if (!create_threads(&dawdaw))
-		{
-			pthread_mutex_unlock(&dawdaw.philo->death);
-			pthread_mutex_destroy(&dawdaw.philo->death);
-			pthread_mutex_destroy(&dawdaw.philo->fork);
-			pthread_mutex_destroy(&dawdaw.philo->print);
+		if (norminette(&dawdaw) == 1)
 			return (1);
-		}
-		
+		return (0);
 	}
 	else
 	{

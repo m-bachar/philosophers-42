@@ -6,7 +6,7 @@
 /*   By: mbachar <mbachar@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 22:36:43 by mbachar           #+#    #+#             */
-/*   Updated: 2023/06/24 11:15:57 by mbachar          ###   ########.fr       */
+/*   Updated: 2023/06/24 13:08:43 by mbachar          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,6 @@ typedef struct s_philo
 	size_t			lastmeal_time;
 	pthread_t		philo;
 	pthread_mutex_t	fork;
-	pthread_mutex_t	death;
-	pthread_mutex_t	print;
 	int				flag;
 	struct s_philo	*prev;
 	struct s_philo	*next;
@@ -41,6 +39,8 @@ typedef struct s_list
 {
 	int				philos_count;
 	size_t			the_begining_of_the_existence;
+	pthread_mutex_t	death;
+	pthread_mutex_t	print;
 	int				time_to_eat;
 	int				time_to_sleep;
 	int				time_to_die;
@@ -73,5 +73,7 @@ void		fill_list(t_list *lst, char **args);
 void		print_activity(t_philo *philo, char *str);
 void		*philo_stat(void *philo);
 int			create_threads(t_list *philo);
+int			create_threads_2(t_list *shared);
+int			norminette(t_list *dawdaw);
 
 #endif
