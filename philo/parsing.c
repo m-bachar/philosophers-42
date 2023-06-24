@@ -6,7 +6,7 @@
 /*   By: mbachar <mbachar@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 22:36:39 by mbachar           #+#    #+#             */
-/*   Updated: 2023/06/24 12:03:46 by mbachar          ###   ########.fr       */
+/*   Updated: 2023/06/24 22:52:22 by mbachar          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ int	ft_isempty(char **str)
 
 int	args_values(char **args)
 {
-	if (ft_atoi(args[1]) > 0 && ft_atoi(args[1]) < 200
+	if (ft_atoi(args[1]) > 0 && ft_atoi(args[1]) <= 200
 		&& ft_atoi(args[2]) >= 60 && ft_atoi(args[3]) >= 60
 		&& ft_atoi(args[4]) >= 60)
 		return (1);
