@@ -6,7 +6,7 @@
 /*   By: mbachar <mbachar@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 00:39:24 by mbachar           #+#    #+#             */
-/*   Updated: 2023/06/24 13:13:02 by mbachar          ###   ########.fr       */
+/*   Updated: 2023/06/27 22:37:13 by mbachar          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,16 +76,19 @@ int	create_threads_2(t_list *shared)
 {
 	while (shared->philo->flag)
 	{
+		usleep(100);
 		pthread_mutex_lock(&shared->death);
 		if (shared->philo->eat_counter > shared->eating_count
 			&& shared->eating_count != -1)
 		{
+			usleep(500);
 			shared->philo->flag = 0;
 			return (0);
 		}
 		if (currenttime() - shared->philo->lastmeal_time
 			> (size_t)shared->time_to_die)
 		{
+			usleep(500);
 			print_activity(shared->philo, "died");
 			shared->philo->flag = 0;
 			return (0);

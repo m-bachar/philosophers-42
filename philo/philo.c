@@ -6,7 +6,7 @@
 /*   By: mbachar <mbachar@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 22:36:40 by mbachar           #+#    #+#             */
-/*   Updated: 2023/06/24 13:10:14 by mbachar          ###   ########.fr       */
+/*   Updated: 2023/06/27 22:36:41 by mbachar          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,19 +29,6 @@ void	daddysleep(size_t timestamp)
 		usleep(100);
 }
 
-int	norminette(t_list *dawdaw)
-{
-	if (!create_threads(dawdaw))
-	{
-		pthread_mutex_unlock(&dawdaw->death);
-		pthread_mutex_destroy(&dawdaw->death);
-		pthread_mutex_destroy(&dawdaw->philo->fork);
-		pthread_mutex_destroy(&dawdaw->print);
-		return (1);
-	}
-	return (0);
-}
-
 int	main(int ac, char *av[])
 {
 	t_list	dawdaw;
@@ -59,7 +46,7 @@ int	main(int ac, char *av[])
 		while (i++ < ft_atoi(av[1]))
 			ft_lstadd_back(&dawdaw.philo, ft_lstnew(i, &dawdaw));
 		fill_list(&dawdaw, av);
-		if (norminette(&dawdaw) == 1)
+		if (!create_threads(&dawdaw))
 			return (1);
 		return (0);
 	}
